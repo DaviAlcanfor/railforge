@@ -89,7 +89,7 @@ class GeneratorService:
 
             output = self.client.containers.run(
                 image=settings.ALPINE_IMAGE,
-                command=settings.ALPINE_READ_CMD.format(filename=tar_filename),
+                command=settings.ALPINE_READ_CMD.format(filename=TAR_FILENAME),
                 volumes={
                     settings.VOLUME_NAME: {
                         "bind": "/output",
