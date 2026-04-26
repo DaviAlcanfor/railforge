@@ -4,26 +4,23 @@ from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 import docker
 
-from app.config.settings import settings
+from app.frameworks.registry import FRAMEWORKS
 from app.routers import generate_router
 from app.routers import frameworks_router
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # making sure theres a ruby img
-
-    client = docker.from_env()
-    try:
-        client.images.get(settings.RUBY_IMAGE)
-        logger.info(f"Image {settings.RUBY_IMAGE} already available")
-
-    except docker.errors.ImageNotFound:
-        logger.info(f"Pulling {settings.RUBY_IMAGE}...")
-
-        client.images.pull(settings.RUBY_IMAGE)
-        logger.info(f"Image {settings.RUBY_IMAGE} ready")
     
+    client = docker.from_env()
+    
+    for framework in FRAMEWORKS.values():
+        try:
+            client.images.get(framework.DOCKER_IMAGE)
+            logger.info(f"Image {framework.DOCKER_IMAGE} already available")
+        except docker.errors.ImageNotFound:
+            logger.info(f"Image {framework.DOCKER_IMAGE} not found — build it with: docker build -f backend/dockerfiles/Dockerfile.{framework.NAME} -t {framework.DOCKER_IMAGE} backend/")
+
     yield
 
 
