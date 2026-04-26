@@ -6,6 +6,7 @@ import docker
 
 from app.config.settings import settings
 from app.routers import generate_router
+from app.routers import frameworks_router
 
 
 @asynccontextmanager
@@ -28,7 +29,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="RailForge",
-    description="Generate production-ready Rails APIs",
+    description="Generate production-ready APIs",
     lifespan=lifespan
 )
 
@@ -40,3 +41,4 @@ app.add_middleware(
 )
 
 app.include_router(generate_router.router)
+app.include_router(frameworks_router.router)

@@ -1,7 +1,7 @@
 from typing import List
 from pydantic import BaseModel, field_validator
 
-from app.schemas.field_schema import FieldType
+from app.enums.field_types import FieldType
 
 
 class ModelField(BaseModel):
@@ -15,7 +15,8 @@ class ModelField(BaseModel):
             raise ValueError("Field name must contain only letters and underscores")
         return v.lower()
 
-class RailsModel(BaseModel):
+
+class Model(BaseModel):
     name: str
     fields: List[ModelField]
 
