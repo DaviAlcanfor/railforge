@@ -5,6 +5,7 @@ services:
       - "8000:8000"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - railforge_output:/output
     environment:
       - PYTHONUNBUFFERED=1
 
@@ -16,3 +17,27 @@ services:
       - REACT_APP_API_URL=http://localhost:8000
     depends_on:
       - backend
+
+  railforge-rails:
+    build:
+      context: ./backend
+      dockerfile: dockerfiles/Dockerfile.rails
+    image: railforge-rails
+    command: echo "image ready"
+
+  railforge-nest:
+    build:
+      context: ./backend
+      dockerfile: dockerfiles/Dockerfile.nest
+    image: railforge-nest
+    command: echo "image ready"
+
+  railforge-laravel:
+    build:
+      context: ./backend
+      dockerfile: dockerfiles/Dockerfile.laravel
+    image: railforge-laravel
+    command: echo "image ready"
+
+volumes:
+  railforge_output:
