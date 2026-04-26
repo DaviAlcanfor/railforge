@@ -1,7 +1,5 @@
 import styles from './styles/App.module.css'
 
-import { Github, Mail, Instagram, Linkedin } from 'lucide-react'
-
 import FrameworkSelector from './components/FrameworkSelector'
 import ModelEditor from './components/ModelEditor'
 import ReferencePanel from './components/ReferencePanel'
@@ -102,18 +100,6 @@ function App() {
         </aside>
       </main>
   
-      <footer className={styles.footer}>
-        <button className={styles.button} onClick={handleGenerate}>
-          Download
-        </button>
-        <div className={styles.links}>
-          <a href="https://github.com/DaviAlcanfor/" target="_blank" rel="noreferrer"><Github size={16} /></a>
-          <a href="mailto:alcanfordavi@gmail.com"><Mail size={16} /></a>
-          <a href="https://linkedin.com/in/..." target="_blank" rel="noreferrer"><Linkedin size={16} /></a>
-          <a href="https://instagram.com/..." target="_blank" rel="noreferrer"><Instagram size={16} /></a>
-        </div>
-        <p className={styles.copyright}>© 2026 Davi Alcanfor</p>
-      </footer>
     </div>
   )
 }

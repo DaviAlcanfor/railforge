@@ -1,30 +1,28 @@
-import type { FrameworkType } from "../types/enums";
-import type { Framework } from "../types/interfaces";
-
+import styles from '../styles/FrameworkSelector.module.css'
+import type { FrameworkType } from "../types/enums"
+import type { Framework } from "../types/interfaces"
 
 type FrameworkSelectorProps = {
     frameworks: Framework[]
-    selected: FrameworkType 
+    selected: FrameworkType
     onChange: (value: FrameworkType) => void
 }
 
 export default function FrameworkSelector(props: FrameworkSelectorProps){
-    return <>
-        <label htmlFor="">
-            <select 
-                name="FrameworkSelector" 
-                id="FrameworkSelector" 
-                value={props.selected}
-                onChange={
-                    e => props.onChange(e.target.value as FrameworkType)
-                }
-            >
-                {props.frameworks.map(f => (
-                    <option key={f.name} value={f.name}>
-                        {f.name}
-                    </option>
-                ))}
-            </select>
-        </label>
-    </>
+    return (
+        <div className={styles.selector}>
+            {props.frameworks.map(f => (
+                <label key={f.name} className={styles.option}>
+                    <input
+                        type="radio"
+                        name="framework"
+                        value={f.name}
+                        checked={props.selected === f.name}
+                        onChange={e => props.onChange(e.target.value as FrameworkType)}
+                    />
+                    <span>{f.name}</span>
+                </label>
+            ))}
+        </div>
+    )
 }
