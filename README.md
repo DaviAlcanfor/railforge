@@ -1,4 +1,6 @@
 <div align="center">
+
+  <img src="frontend/public/anvil.svg" width="128" />
   
   <h1>RailForge</h1>
 
