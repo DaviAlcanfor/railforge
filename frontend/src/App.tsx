@@ -17,6 +17,8 @@ function App() {
   const [selected, setSelected] = useState<FrameworkType>(FrameworkType.Rails)
   const [json, setJson] = useState<string>("")
   const [frameworkDetail, setFrameworkDetail] = useState<Framework | null>(null)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [error, setError] = useState<string | null>(null)
 
 
   useEffect(() => {
@@ -40,12 +42,10 @@ function App() {
 
 
   const handleGenerate = async () => {
+    setIsLoading(true)
     try {
       const parsed = JSON.parse(json)
       const payload = { ...parsed, framework: selected }
-
-      console.log(payload)
-
       const projectTitle = parsed.project_name
       const blob = await generateProject(payload)
   
@@ -61,11 +61,13 @@ function App() {
   
     } catch (err) {
       if (err instanceof SyntaxError) {
-        alert("JSON inválido")
+        setError("JSON inválido")
       } else {
         console.error(err)
-        alert("Erro ao gerar projeto")
+        setError("Erro ao gerar projeto")
       }
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -85,13 +87,23 @@ function App() {
             frameworks={frameworks}
             onChange={setSelected}
           />
-          <button className={styles.button} onClick={handleGenerate}>
-            Download
-          </button>
+          <div>
+          <button 
+              className={styles.button} 
+              onClick={handleGenerate}
+              disabled={isLoading}
+            >
+              {isLoading ? "Generating..." : "Download"}
+            </button>
+            {error && <p className={styles.error}>{error}</p>}
+          </div>
         </aside>
   
         <section className={styles.editor}>
-          <ModelEditor value={json} onChange={setJson} />
+          <ModelEditor 
+            value={json} 
+            onChange={v => { setJson(v); setError(null) }} 
+          />
         </section>
   
         <aside className={styles.reference}>
