@@ -42,28 +42,30 @@ function App() {
   const handleGenerate = async () => {
     try {
       const parsed = JSON.parse(json)
-      const projectTitle = parsed.project_name
-      const blob = await generateProject(parsed)
+      const payload = { ...parsed, framework: selected }
 
-      // remove invalid characters from filename
-      const safeName = projectTitle.replace(/[<>:"/\\|?*]+/g, "_")
+      console.log(payload)
+
+      const projectTitle = parsed.project_name
+      const blob = await generateProject(payload)
   
+      const safeName = projectTitle.replace(/[<>:"/\\|?*]+/g, "_")
       const url = URL.createObjectURL(blob)
-      const a = document.createElement("a")  
+      const a = document.createElement("a")
       a.href = url
       a.download = `${safeName}.tar.gz`
-  
-      // some browsers need the elem in the DOM
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
-      
-      // release the memory when the download begins
       setTimeout(() => URL.revokeObjectURL(url), 1000)
   
     } catch (err) {
-      console.error(err)
-      alert("JSON inválido")
+      if (err instanceof SyntaxError) {
+        alert("JSON inválido")
+      } else {
+        console.error(err)
+        alert("Erro ao gerar projeto")
+      }
     }
   }
 
