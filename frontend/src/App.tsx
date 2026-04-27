@@ -76,6 +76,7 @@ function App() {
   return (
     <div className={styles.app}>
       <header className={styles.header}>
+        <img src="/anvil.svg" width="48" />
         <h1 className={styles.title}>RailForge</h1>
         <p className={styles.subtitle}>Generate production-ready APIs from a JSON definition</p>
       </header>
