@@ -1,39 +1,43 @@
 <div align="center">
+  
   <h1>RailForge</h1>
 
   <img src="https://img.shields.io/badge/FastAPI-0.136-009688?style=for-the-badge&logo=fastapi" />
   <img src="https://img.shields.io/badge/Python-3.13-3776AB?style=for-the-badge&logo=python" />
+  <img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react" />
+  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript" />
   <img src="https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker" />
   <img src="https://img.shields.io/badge/Ruby_on_Rails-8.1-CC0000?style=for-the-badge&logo=rubyonrails" />
   <img src="https://img.shields.io/badge/NestJS-10-E0234E?style=for-the-badge&logo=nestjs" />
   <img src="https://img.shields.io/badge/Laravel-11-FF2D20?style=for-the-badge&logo=laravel" />
 
-  <p>Generate production-ready APIs from a JSON definition — no framework installation required.</p>
+  <p>Generate production-ready API projects from a JSON definition — no framework installation required.</p>
 </div>
 
 ---
 
-## Supported frameworks
+## What it solves
 
-| Framework | Language | Generates |
-|-----------|----------|-----------|
-| `rails` | Ruby | model, migration, controller, routes |
-| `nestjs` | TypeScript | model, service, controller, module, dto |
-| `laravel` | PHP | model, migration, controller, routes |
+Setting up a new API project from scratch takes time. You install the framework, configure the project, generate models, run migrations — before writing a single line of business logic.
+
+RailForge automates that entire bootstrap process. You describe your project in JSON, pick a framework, and download a ready-to-run project archive in seconds. No Ruby, PHP, or Node needed on your machine.
 
 ---
 
 ## How it works
 
-You define your framework, project name, and models in JSON. RailForge spins up an isolated Docker container with the framework pre-installed, runs the generation commands, compresses the output, and returns a ready-to-use `.tar.gz` archive.
-
-No Ruby, PHP, or Node on your machine. No manual setup. Just download and run.
+1. You open the UI, select a framework and describe your models in JSON
+2. RailForge sends the definition to a FastAPI backend
+3. The backend spins up an isolated Docker container with the chosen framework pre-installed
+4. Inside the container, the framework CLI generates the project, models and migrations
+5. The output is compressed and returned as a `.tar.gz` download
+6. The container is removed
 
 ---
 
 ## Running
 
-**Requirements:** Docker Desktop
+**Requirements:** Docker Desktop installed and running.
 
 ```bash
 git clone https://github.com/DaviAlcanfor/railforge.git
@@ -41,14 +45,51 @@ cd railforge
 docker compose up
 ```
 
-All framework images are built automatically on first run.
+All framework images are built automatically on first run — this may take a few minutes.
 
-API → `http://localhost:8000`  
-Docs → `http://localhost:8000/docs`
+Open `http://localhost:3000` to use the UI.
+
+---
+
+## Supported frameworks
+
+| Framework | Language | What gets generated |
+|-----------|----------|---------------------|
+| Rails | Ruby | models, migrations, controllers, routes |
+| NestJS | TypeScript | modules, controllers, services, DTOs |
+| Laravel | PHP | models, migrations, controllers, resources |
 
 ---
 
 ## Usage
+
+Select a framework using the radio buttons on the left, then paste your project definition in the editor:
+
+```json
+{
+  "project_name": "my-api",
+  "models": [
+    {
+      "name": "Player",
+      "fields": [
+        {"name": "name", "type": "string"},
+        {"name": "age", "type": "integer"},
+        {"name": "active", "type": "boolean"}
+      ]
+    }
+  ]
+}
+```
+
+Click **Download** to generate and download the project as a `.tar.gz` archive.
+
+The right panel shows the accepted field types and what the selected framework generates, so you don't need to memorize anything.
+
+---
+
+## API
+
+If you prefer to use the API directly:
 
 ```bash
 curl -X POST http://localhost:8000/generate \
@@ -56,105 +97,44 @@ curl -X POST http://localhost:8000/generate \
   -d '{
     "framework": "rails",
     "project_name": "my-api",
-    "models": [
-      {
-        "name": "Player",
-        "fields": [
-          {"name": "name", "type": "string"},
-          {"name": "age", "type": "integer"}
-        ]
-      }
-    ]
+    "models": [{"name": "Player", "fields": [{"name": "name", "type": "string"}]}]
   }' \
   --output my-api.tar.gz
 ```
 
-To check which field types are accepted by each framework:
-
-```bash
-curl http://localhost:8000/frameworks/rails
-```
+Interactive docs at `http://localhost:8000/docs`.
 
 ---
 
-## Endpoints
+## Technology choices
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/generate` | Generate an API project |
-| `GET` | `/frameworks/` | List all supported frameworks |
-| `GET` | `/frameworks/{name}` | Framework details, accepted types, and generates |
+**FastAPI** — async Python framework with automatic validation via Pydantic. The JSON schema is validated before any container is spun up, so invalid payloads are rejected immediately.
 
-**POST /generate — request body:**
+**Docker SDK** — each generation runs in an isolated container using the framework's own CLI. This means no framework needs to be installed on the host machine, and generations don't interfere with each other.
 
-```json
-{
-  "framework": "rails",
-  "project_name": "my-api",
-  "models": [
-    {
-      "name": "ModelName",
-      "fields": [
-        {"name": "field_name", "type": "string"}
-      ]
-    }
-  ]
-}
-```
+**Shared volume** — instead of copying files directly from the container (which has throughput limitations on Windows), the generated project is compressed into a shared Docker volume and read by a lightweight Alpine container. This avoids named pipe bottlenecks.
+
+**React + TypeScript** — the frontend fetches available frameworks and their accepted types from the API, so the reference panel always reflects what the backend actually supports. No hardcoded values on the client.
 
 ---
 
 ## Project structure
 
 ```
-backend/
-├── app/
-│   ├── config/        # Application settings via Pydantic Settings
-│   ├── enums/         # FieldType, GeneratesType, FrameworkType enums
-│   ├── frameworks/    # BaseFramework + Rails, NestJS, Laravel implementations
-│   ├── routers/       # FastAPI route definitions
-│   ├── schemas/       # Pydantic request/response models
-│   └── services/      # Business logic and Docker orchestration
-├── dockerfiles/       # Pre-built images for each framework
-└── main.py            # Application entrypoint with lifespan hooks
-```
-
----
-
-## Generation flow
-
-```
-POST /generate
-      │
-      ▼
- Pydantic validates
- framework + models
-      │
-      ▼
- Framework registry
- resolves implementation
- (Rails / NestJS / Laravel)
-      │
-      ▼
- Docker spins up
- framework container
-      │
-      ├── install framework
-      ├── create project
-      ├── generate models
-      └── run migrations
-           │
-           ▼
-      tar -czf → shared volume (railforge_output)
-           │
-           ▼
-      Alpine container
-      reads volume → bytes
-           │
-           ▼
-      StreamingResponse
-      → .tar.gz download
-           │
-           ▼
-      containers removed
+railforge/
+├── backend/
+│   ├── app/
+│   │   ├── config/       # Pydantic Settings
+│   │   ├── enums/        # FieldType, GeneratesType, FrameworkType
+│   │   ├── frameworks/   # BaseFramework + Rails, NestJS, Laravel
+│   │   ├── routers/      # FastAPI endpoints
+│   │   ├── schemas/      # Request/response models
+│   │   └── services/     # Docker orchestration
+│   ├── dockerfiles/      # Pre-built framework images
+│   └── main.py
+└── frontend/
+    └── src/
+        ├── components/   # FrameworkSelector, ModelEditor, ReferencePanel
+        ├── services/     # Axios API client
+        └── types/        # Enums and interfaces
 ```
